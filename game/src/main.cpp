@@ -7,27 +7,50 @@ See documentation here: https://www.raylib.com/, and examples here: https://www.
 #include "raymath.h"
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
+#include "game.h"
 
-const unsigned int TARGET_FPS = 50;
+const unsigned int TARGET_FPS = 50; //frames per seconds
+float dt = 1; //seconds/frames
 float time = 0;
+float x = 500;
+float y = 500;
+float freequency = 5;
+float amplitude = 100;
+
+
+void update()
+{
+	dt = 1.0f / TARGET_FPS;
+	time += dt;
+
+    x = x + (-cos(time * freequency )) * freequency + amplitude * dt;
+	y = y + (-sin(time * freequency )) * freequency + amplitude * dt;
+
+}
+
+
+void draw()
+{
+	BeginDrawing();
+	ClearBackground(RED);
+	DrawText("Hello Andrew Carvalho 101549315!", 10,  GetScreenHeight() - 30 , 20, LIGHTGRAY);
+
+	GuiSliderBar(Rectangle{ 60, 10, 1000, 10 }, "Time", TextFormat("%.2f", time), &time, 0, 240);
+	DrawText("T: %.1f", GetScreenWidth() - 40, 10, 30, LIGHTGRAY);
+	DrawCircle(x, y, 50, BLUE);
+	EndDrawing();
+}
+
 int main()
 {
-    InitWindow(1200, 800, "Physics-1");
+    InitWindow(InitialWidth, InitialHeight, "Andrew Carvalho 101549315 GAME2005");
     SetTargetFPS(TARGET_FPS);
 
     while (!WindowShouldClose())
-    {
-        BeginDrawing();
-            ClearBackground(WHITE);
-            DrawText("Hello world!", 10, 10, 20, LIGHTGRAY);
-
-
-            time += 1;
-            GuiSliderBar(Rectangle{ 60, 5, 1000, 10 }, "Time", TextFormat("%.2f", time), &time, 0, 240);
-
-
-        EndDrawing();
-    }
+	{
+		update();
+		draw();
+	}
 
     CloseWindow();
     return 0;
