@@ -1,57 +1,31 @@
-/*
-This project uses the Raylib framework to provide us functionality for math, graphics, GUI, input etc.
-See documentation here: https://www.raylib.com/, and examples here: https://www.raylib.com/examples.html
-*/
-
 #include "raylib.h"
-#include "raymath.h"
-#define RAYGUI_IMPLEMENTATION
-#include "raygui.h"
-#include "game.h"
 
-const unsigned int TARGET_FPS = 50; //frames per seconds
-float dt = 1; //seconds/frames
-float time = 0;
-float x = 500;
-float y = 500;
-float freequency = 5;
-float amplitude = 100;
-
-
-void update()
+int main(void)
 {
-	dt = 1.0f / TARGET_FPS;
-	time += dt;
+    // Initialization
+    const int screenWidth = 800;
+    const int screenHeight = 450;
 
-    x = x + (-cos(time * freequency )) * freequency + amplitude * dt;
-	y = y + (-sin(time * freequency )) * freequency + amplitude * dt;
+    InitWindow(screenWidth, screenHeight, "raylib - horizontal red line");
 
-}
+    SetTargetFPS(60);
 
-
-void draw()
-{
-	BeginDrawing();
-	ClearBackground(RED);
-	DrawText("Hello Andrew Carvalho 101549315!", 10,  GetScreenHeight() - 30 , 20, LIGHTGRAY);
-
-	GuiSliderBar(Rectangle{ 60, 10, 1000, 10 }, "Time", TextFormat("%.2f", time), &time, 0, 240);
-	DrawText("T: %.1f", GetScreenWidth() - 40, 10, 30, LIGHTGRAY);
-	DrawCircle(x, y, 50, BLUE);
-	EndDrawing();
-}
-
-int main()
-{
-    InitWindow(InitialWidth, InitialHeight, "Andrew Carvalho 101549315 GAME2005");
-    SetTargetFPS(TARGET_FPS);
-
+    // Main game loop
     while (!WindowShouldClose())
-	{
-		update();
-		draw();
-	}
+    {
+        BeginDrawing();
+
+        ClearBackground(BLACK);
+
+        // Draw a horizontal red line across the screen at the middle of the window
+        DrawLine(50, screenHeight - 50, 300, 250, RED);
+
+
+
+        EndDrawing();
+    }
 
     CloseWindow();
+
     return 0;
 }
