@@ -1,47 +1,57 @@
 #include "raylib.h"
-#include <math.h>  
-#include <stdio.h>  
+#include <math.h>
+#include <stdio.h>
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h"
+#define PI 3.14159265358979323846f
 
 int main(void)
 {
-    // Initialization
     const int screenWidth = 800;
     const int screenHeight = 450;
-
-    InitWindow(screenWidth, screenHeight, "raylib - horizontal red line");
+    InitWindow(screenWidth, screenHeight, "raylib - Angry Bird Launch - horizontal red line");
     SetTargetFPS(60);
 
-    // line start and end points
-    Vector2 start = { 50, screenHeight - 50 };
-    Vector2 end = { 300, 250 };
+    // Launch parameters
+    Vector2 launchPos = { 100, screenHeight - 100 };
+    float launchAngleDeg = 45.0f;
+    float launchSpeed = 200.0f;
 
     while (!WindowShouldClose())
     {
-        // Calculate angle
-        float dx = end.x - start.x;
-        float dy = end.y - start.y;
-        float angleRad = atan2f(dy, dx);          // angle in radians
-        float angleDeg = angleRad * (180.0f / PI); // converting to degrees
+        // GUI sliders - Fixed Rectangle syntax for C
+        GuiSliderBar( Rectangle { 20, 20, 200, 20 }, "Launch X", NULL, & launchPos.x, 0, screenWidth);
+        GuiSliderBar( Rectangle { 20, 50, 200, 20 }, "Launch Y", NULL, & launchPos.y, 0, screenHeight);
+        GuiSliderBar( Rectangle { 20, 80, 200, 20 }, "Angle", NULL, & launchAngleDeg, 0, 180);
+        GuiSliderBar( Rectangle { 20, 110, 200, 20 }, "Speed", NULL, & launchSpeed, 0, 400);
+
+        // Compute velocity vector
+        float angleRad = launchAngleDeg * (PI / 180.0f);
+        Vector2 velocity = {
+            cosf(angleRad) * launchSpeed,
+            -sinf(angleRad) * launchSpeed
+        };
+
+        // endpoint for the velocity vector (scaled for display)
+        Vector2 end = {
+            launchPos.x + velocity.x * 0.3f,
+            launchPos.y + velocity.y * 0.3f
+        };
 
         BeginDrawing();
         ClearBackground(BLACK);
 
-        // This Draws the line
-        DrawLineV(start, end, RED);
+        // mark launch position
+        DrawCircleV(launchPos, 5, YELLOW);
 
-        // This draws the box for the angle text
-        int boxWidth = 190;
-        int boxHeight = 40;
-        int boxX = 10;
-        int boxY = 10;
+        // draw velocity vector
+        DrawLineV(launchPos, end, RED);
 
-        DrawRectangle(boxX, boxY, boxWidth, boxHeight, DARKGRAY);
-        DrawRectangleLines(boxX, boxY, boxWidth, boxHeight, RAYWHITE); // border
-
-        // Draws the angle text then I put them in the box
-        char angleText[64];
-        _snprintf_s(angleText, sizeof(angleText), _TRUNCATE, "Angle: %.2f deg", angleDeg);
-        DrawText(angleText, boxX + 10, boxY + 10, 20, RAYWHITE);
+        // draw text of current values
+        DrawText(TextFormat("X: %.0f", launchPos.x), 240, 20, 20, WHITE);
+        DrawText(TextFormat("Y: %.0f", launchPos.y), 240, 50, 20, WHITE);
+        DrawText(TextFormat("Angle: %.1f deg", launchAngleDeg), 240, 80, 20, WHITE);
+        DrawText(TextFormat("Speed: %.1f", launchSpeed), 240, 110, 20, WHITE);
 
         EndDrawing();
     }
