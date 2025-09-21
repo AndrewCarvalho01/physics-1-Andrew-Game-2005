@@ -5,6 +5,22 @@
 #include "raygui.h"
 #define PI 3.14159265358979323846f
 
+
+class PhysicsBody {
+public:
+    Vector2 position;
+    Vector2 velocity;
+    float drag;
+    float mass;
+    bool active; // to indicate if the body is active or not
+
+    // Constructor to initialize the physics body
+    PhysicsBody(Vector2 pos, Vector2 vel, float m, float d)
+        : position(pos), velocity(vel), mass(m), drag(d), active(true) {
+    }
+
+};
+
 int main(void)
 {
     const int screenWidth = 800;
@@ -16,6 +32,19 @@ int main(void)
     Vector2 launchPos = { 100, screenHeight - 100 };
     float launchAngleDeg = 45.0f;
     float launchSpeed = 200.0f;
+
+    // TEST: This test is just to prove I can create multiple PhysicsBody objects to prove the framework works
+    PhysicsBody ball1({ 100, 300 }, { 50, -100 }, 1.0f, 0.1f);
+    PhysicsBody ball2({ 200, 250 }, { -30, -80 }, 2.0f, 0.2f);
+    PhysicsBody ball3({ 150, 200 }, { 0, -120 }, 1.5f, 0.0f);
+
+    printf("=== Multiple PhysicsBody Test ===\n");
+    printf("Ball 1: pos(%.1f,%.1f) vel(%.1f,%.1f) mass:%.1f\n",
+        ball1.position.x, ball1.position.y, ball1.velocity.x, ball1.velocity.y, ball1.mass);
+    printf("Ball 2: pos(%.1f,%.1f) vel(%.1f,%.1f) mass:%.1f\n",
+        ball2.position.x, ball2.position.y, ball2.velocity.x, ball2.velocity.y, ball2.mass);
+    printf("Ball 3: pos(%.1f,%.1f) vel(%.1f,%.1f) mass:%.1f\n",
+        ball3.position.x, ball3.position.y, ball3.velocity.x, ball3.velocity.y, ball3.mass);
 
     while (!WindowShouldClose())
     {
@@ -53,8 +82,16 @@ int main(void)
         DrawText(TextFormat("Angle: %.1f deg", launchAngleDeg), 280, 80, 20, WHITE);
         DrawText(TextFormat("Speed: %.1f", launchSpeed), 280, 110, 20, WHITE);
 
+        // Draws the multiple test balls
+        DrawCircleV(ball1.position, 6, RED);
+        DrawCircleV(ball2.position, 6, GREEN);
+        DrawCircleV(ball3.position, 6, BLUE);
+
         EndDrawing();
+
+
     }
+
 
     CloseWindow();
     return 0;
