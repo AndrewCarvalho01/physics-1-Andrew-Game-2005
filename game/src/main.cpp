@@ -21,6 +21,20 @@ public:
 
 };
 
+class PhysicsSIM {
+public: float deltaTime; // ---------
+      float time;        //         | -------- applies to all physics bodies
+      Vector2 gravity;   // --------- 
+
+      // Constructor to initialize the values
+      PhysicsSIM(float dt = 0.0f, float t = 0.0f, Vector2 grav = { 0, 98.0f })
+      {
+          deltaTime = dt;
+          time = t;
+          gravity = grav;
+      }
+};
+
 int main(void)
 {
     const int screenWidth = 800;
@@ -38,6 +52,14 @@ int main(void)
     PhysicsBody ball2({ 200, 250 }, { -30, -80 }, 2.0f, 0.2f);
     PhysicsBody ball3({ 150, 200 }, { 0, -120 }, 1.5f, 0.0f);
 
+    // TEST: Create a PhysicsSIM object
+    PhysicsSIM simulation;  // uses default values
+    printf("=== PhysicsSIM Test ===\n");
+    printf("Delta Time: %.3f\n", simulation.deltaTime);
+    printf("Total Time: %.3f\n", simulation.time);
+    printf("Gravity: (%.1f, %.1f)\n", simulation.gravity.x, simulation.gravity.y);
+    printf("====================\n");
+
     printf("=== Multiple PhysicsBody Test ===\n");
     printf("Ball 1: pos(%.1f,%.1f) vel(%.1f,%.1f) mass:%.1f\n",
         ball1.position.x, ball1.position.y, ball1.velocity.x, ball1.velocity.y, ball1.mass);
@@ -49,10 +71,10 @@ int main(void)
     while (!WindowShouldClose())
     {
         // GUI sliders (Had expected expression errors, until I used Rectangle{...}
-        GuiSliderBar( Rectangle { 60, 20, 200, 20 }, "Launch X", NULL, & launchPos.x, 0, screenWidth);
-        GuiSliderBar( Rectangle { 60, 50, 200, 20 }, "Launch Y", NULL, & launchPos.y, 0, screenHeight);
-        GuiSliderBar( Rectangle { 60, 80, 200, 20 }, "Angle", NULL, & launchAngleDeg, 0, 180);
-        GuiSliderBar( Rectangle { 60, 110, 200, 20 }, "Speed", NULL, & launchSpeed, 0, 400);
+        GuiSliderBar(Rectangle{ 60, 20, 200, 20 }, "Launch X", NULL, &launchPos.x, 0, screenWidth);
+        GuiSliderBar(Rectangle{ 60, 50, 200, 20 }, "Launch Y", NULL, &launchPos.y, 0, screenHeight);
+        GuiSliderBar(Rectangle{ 60, 80, 200, 20 }, "Angle", NULL, &launchAngleDeg, 0, 180);
+        GuiSliderBar(Rectangle{ 60, 110, 200, 20 }, "Speed", NULL, &launchSpeed, 0, 400);
 
         // Computes the velocity vector
         float angleRad = launchAngleDeg * (PI / 180.0f);
