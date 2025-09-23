@@ -33,6 +33,20 @@ public: float deltaTime; // ---------
           time = t;
           gravity = grav;
       }
+
+      void Update(PhysicsBody& body, float dt)
+      {
+		  deltaTime = dt; // update deltaTime each frame
+
+		  // apply gravity to velocity
+		  body.velocity.x += gravity.x * dt;
+          body.velocity.y += gravity.y * dt;
+		  // apply drag to velocity
+          body.position.x += body.velocity.x * dt;
+          body.position.y += body.velocity.y * dt;
+          
+		  time += dt;
+      }
 };
 
 int main(void)
@@ -88,6 +102,12 @@ int main(void)
             launchPos.x + velocity.x * 0.3f,
             launchPos.y + velocity.y * 0.3f
         };
+
+        float frameTime = GetFrameTime();
+        simulation.Update(ball1, frameTime);
+        simulation.Update(ball2, frameTime);
+        simulation.Update(ball3, frameTime);
+
 
         BeginDrawing();
         ClearBackground(BLACK);
