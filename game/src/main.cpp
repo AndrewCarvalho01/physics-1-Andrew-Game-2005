@@ -90,6 +90,10 @@ int main(void)
         GuiSliderBar(Rectangle{ 60, 80, 200, 20 }, "Angle", NULL, &launchAngleDeg, 0, 180);
         GuiSliderBar(Rectangle{ 60, 110, 200, 20 }, "Speed", NULL, &launchSpeed, 0, 400);
 
+		// GUI sliders for gravity and magnitude
+		GuiSliderBar(Rectangle{ 520, 20, 200, 20 }, "Gravity X", NULL, &simulation.gravity.x, -200, 200);
+		GuiSliderBar(Rectangle{ 520, 50, 200, 20 }, "Gravity Y", NULL, &simulation.gravity.y, -200, 200);
+
         // Computes the velocity vector
         float angleRad = launchAngleDeg * (PI / 180.0f);
         Vector2 velocity = {
