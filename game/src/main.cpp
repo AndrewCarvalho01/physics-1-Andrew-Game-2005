@@ -36,16 +36,16 @@ public: float deltaTime; // ---------
 
       void Update(PhysicsBody& body, float dt)
       {
-		  deltaTime = dt; // update deltaTime each frame
+          deltaTime = dt; // update deltaTime each frame
 
-		  // apply gravity to velocity
-		  body.velocity.x += gravity.x * dt;
+          // apply gravity to velocity
+          body.velocity.x += gravity.x * dt;
           body.velocity.y += gravity.y * dt;
-		  // apply drag to velocity
+          // apply drag to velocity
           body.position.x += body.velocity.x * dt;
           body.position.y += body.velocity.y * dt;
-          
-		  time += dt;
+
+          time += dt;
       }
 };
 
@@ -61,26 +61,11 @@ int main(void)
     float launchAngleDeg = 45.0f;
     float launchSpeed = 200.0f;
 
-    // TEST: This test is just to prove I can create multiple PhysicsBody objects to prove the framework works
-    PhysicsBody ball1({ 100, 300 }, { 50, -100 }, 1.0f, 0.1f);
-    PhysicsBody ball2({ 200, 250 }, { -30, -80 }, 2.0f, 0.2f);
-    PhysicsBody ball3({ 150, 200 }, { 0, -120 }, 1.5f, 0.0f);
-
-    // TEST: Create a PhysicsSIM object
+    // Create a PhysicsSIM object
     PhysicsSIM simulation;  // uses default values
-    printf("=== PhysicsSIM Test ===\n");
-    printf("Delta Time: %.3f\n", simulation.deltaTime);
-    printf("Total Time: %.3f\n", simulation.time);
-    printf("Gravity: (%.1f, %.1f)\n", simulation.gravity.x, simulation.gravity.y);
-    printf("====================\n");
 
-    printf("=== Multiple PhysicsBody Test ===\n");
-    printf("Ball 1: pos(%.1f,%.1f) vel(%.1f,%.1f) mass:%.1f\n",
-        ball1.position.x, ball1.position.y, ball1.velocity.x, ball1.velocity.y, ball1.mass);
-    printf("Ball 2: pos(%.1f,%.1f) vel(%.1f,%.1f) mass:%.1f\n",
-        ball2.position.x, ball2.position.y, ball2.velocity.x, ball2.velocity.y, ball2.mass);
-    printf("Ball 3: pos(%.1f,%.1f) vel(%.1f,%.1f) mass:%.1f\n",
-        ball3.position.x, ball3.position.y, ball3.velocity.x, ball3.velocity.y, ball3.mass);
+    PhysicsBody launchedBall({ 0, 0 }, { 0, 0 }, 1.0f, 0.0f);  // starts inactive
+    bool ballActive = false;  // track if ball is in flight
 
     while (!WindowShouldClose())
     {
@@ -90,9 +75,9 @@ int main(void)
         GuiSliderBar(Rectangle{ 60, 80, 200, 20 }, "Angle", NULL, &launchAngleDeg, 0, 180);
         GuiSliderBar(Rectangle{ 60, 110, 200, 20 }, "Speed", NULL, &launchSpeed, 0, 400);
 
-		// GUI sliders for gravity and magnitude
-		GuiSliderBar(Rectangle{ 520, 20, 200, 20 }, "Gravity X", NULL, &simulation.gravity.x, -200, 200);
-		GuiSliderBar(Rectangle{ 520, 50, 200, 20 }, "Gravity Y", NULL, &simulation.gravity.y, -200, 200);
+        // GUI sliders for gravity and magnitude
+        GuiSliderBar(Rectangle{ 520, 20, 200, 20 }, "Gravity X", NULL, &simulation.gravity.x, -200, 200);
+        GuiSliderBar(Rectangle{ 520, 50, 200, 20 }, "Gravity Y", NULL, &simulation.gravity.y, -200, 200);
 
         // Computes the velocity vector
         float angleRad = launchAngleDeg * (PI / 180.0f);
@@ -108,11 +93,18 @@ int main(void)
         };
 
         float frameTime = GetFrameTime();
-        simulation.Update(ball1, frameTime);
-        simulation.Update(ball2, frameTime);
-        simulation.Update(ball3, frameTime);
 
+        if (ballActive) {
+            simulation.Update(launchedBall, frameTime);
+        }
 
+        if (IsKeyPressed(KEY_SPACE)) //shoots ball with space bar
+        {
+
+            launchedBall.position = launchPos;
+            launchedBall.velocity = velocity;  // Uses the velo that I already calcualted from Lab 1
+            ballActive = true;
+        }
         BeginDrawing();
         ClearBackground(BLACK);
 
@@ -128,16 +120,16 @@ int main(void)
         DrawText(TextFormat("Angle: %.1f deg", launchAngleDeg), 280, 80, 20, WHITE);
         DrawText(TextFormat("Speed: %.1f", launchSpeed), 280, 110, 20, WHITE);
 
-        // Draws the multiple test balls
-        DrawCircleV(ball1.position, 6, RED);
-        DrawCircleV(ball2.position, 6, GREEN);
-        DrawCircleV(ball3.position, 6, BLUE);
+
+        // Add this before EndDrawing();
+        if (ballActive) 
+        {
+            DrawCircleV(launchedBall.position, 8, ORANGE);
+        }
 
         EndDrawing();
 
-
     }
-
 
     CloseWindow();
     return 0;
