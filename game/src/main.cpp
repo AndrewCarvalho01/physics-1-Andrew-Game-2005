@@ -36,7 +36,7 @@ public: float deltaTime; // ---------
 
       void Update(PhysicsBody& body, float dt)
       {
-          deltaTime = dt; // update deltaTime each frame
+          deltaTime = dt; // updates deltaTime each frame
 
           // apply gravity to velocity
           body.velocity.x += gravity.x * dt;
@@ -121,7 +121,7 @@ int main(void)
         DrawText(TextFormat("Speed: %.1f", launchSpeed), 280, 110, 20, WHITE);
 
 
-        // Add this before EndDrawing();
+        // This code makes the ball that is launched
         if (ballActive) 
         {
             DrawCircleV(launchedBall.position, 8, ORANGE);
