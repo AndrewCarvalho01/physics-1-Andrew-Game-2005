@@ -4,6 +4,7 @@
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 #define PI 3.14159265358979323846f
+#include <vector>
 
 
 class PhysicsBody {
@@ -13,10 +14,11 @@ public:
     float drag;
     float mass;
     bool active; // to indicate if the body is active or not
+	float radius; // radius for drawing the body
 
     // Constructor to initialize the physics body
-    PhysicsBody(Vector2 pos, Vector2 vel, float m, float d)
-        : position(pos), velocity(vel), mass(m), drag(d), active(true) {
+    PhysicsBody(Vector2 pos, Vector2 vel, float m, float d, float r)
+        : position(pos), velocity(vel), mass(m), drag(d), radius(r), active(true) {
     }
 
 };
@@ -64,8 +66,7 @@ int main(void)
     // Create a PhysicsSIM object
     PhysicsSIM simulation;  // uses default values
 
-    PhysicsBody launchedBall({ 0, 0 }, { 0, 0 }, 1.0f, 0.0f);  // starts inactive
-    bool ballActive = false;  // track if ball is in flight
+	std::vector<PhysicsBody> launchedBalls;  // let's me shoot multiple balls without losing the previous ones
 
     while (!WindowShouldClose())
     {
@@ -94,16 +95,18 @@ int main(void)
 
         float frameTime = GetFrameTime();
 
-        if (ballActive) {
-            simulation.Update(launchedBall, frameTime);
-        }
+        for (const auto& ball : launchedBalls)
+        {
+            // Draw each launched ball
+            DrawCircleV(ball.position, ball.radius, GREEN);
+		}
 
         if (IsKeyPressed(KEY_SPACE)) //shoots ball with space bar
         {
+			// Create a new PhysicsBody for the launched ball
+			PhysicsBody newBall(launchPos, velocity, 1.0f, 0.1f, 8.0f);
 
-            launchedBall.position = launchPos;
-            launchedBall.velocity = velocity;  // Uses the velo that I already calcualted from Lab 1
-            ballActive = true;
+			launchedBalls.push_back(newBall); // add the new ball to the vector
         }
         BeginDrawing();
         ClearBackground(BLACK);
@@ -122,9 +125,9 @@ int main(void)
 
 
         // This code makes the ball that is launched
-        if (ballActive) 
+        for (auto& ball : launchedBalls)
         {
-            DrawCircleV(launchedBall.position, 8, ORANGE);
+			simulation.Update(ball, frameTime);
         }
 
         EndDrawing();
