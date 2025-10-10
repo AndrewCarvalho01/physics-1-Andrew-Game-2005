@@ -49,6 +49,15 @@ public: float deltaTime; // ---------
 
           time += dt;
       }
+
+      bool CheckSphereCollision(const PhysicsBody& bodyA, const PhysicsBody& bodyB) {
+		  float dx = bodyA.position.x - bodyB.position.x;
+		  float dy = bodyA.position.y - bodyB.position.y;
+		  float distance = sqrtf(dx * dx + dy * dy);
+
+		  float combinedRad = bodyA.radius + bodyB.radius;
+          return distance <= combinedRad;
+      }
 };
 
 int main(void)
