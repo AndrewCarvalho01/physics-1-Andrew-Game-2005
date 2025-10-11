@@ -14,7 +14,7 @@ public:
     float drag;
     float mass;
     bool active; // to indicate if the body is active or not
-	float radius; // radius for drawing the body
+    float radius; // radius for drawing the body
 
     // Constructor to initialize the physics body
     PhysicsBody(Vector2 pos, Vector2 vel, float m, float d, float r)
@@ -51,12 +51,34 @@ public: float deltaTime; // ---------
       }
 
       bool CheckSphereCollision(const PhysicsBody& bodyA, const PhysicsBody& bodyB) {
-		  float dx = bodyA.position.x - bodyB.position.x;
-		  float dy = bodyA.position.y - bodyB.position.y;
-		  float distance = sqrtf(dx * dx + dy * dy);
+          float dx = bodyA.position.x - bodyB.position.x;
+          float dy = bodyA.position.y - bodyB.position.y;
+          float distance = sqrtf(dx * dx + dy * dy);
 
-		  float combinedRad = bodyA.radius + bodyB.radius;
+          float combinedRad = bodyA.radius + bodyB.radius;
           return distance <= combinedRad;
+      }
+
+      bool CheckLineCollision(const PhysicsBody& bodyWithLine, const PhysicsBody& targetBody) {
+          Vector2 lineStart = { bodyWithLine.position.x + bodyWithLine.radius, bodyWithLine.position.y };
+          Vector2 lineEnd = { bodyWithLine.position.x + bodyWithLine.radius * 8, bodyWithLine.position.y };
+
+          float dx = targetBody.position.x - lineStart.x;
+          float dy = targetBody.position.y - lineStart.y;
+          float lineLength = lineEnd.x - lineStart.x;
+
+          float t = (dx) / lineLength;
+          if (t < 0) t = 0;
+          if (t > 1) t = 1;
+
+          float closestX = lineStart.x + t * lineLength;
+          float closestY = lineStart.y;
+
+          float distX = targetBody.position.x - closestX;
+          float distY = targetBody.position.y - closestY;
+          float distance = sqrtf(distX * distX + distY * distY);
+
+          return distance <= targetBody.radius;
       }
 };
 
@@ -75,7 +97,7 @@ int main(void)
     // Create a PhysicsSIM object
     PhysicsSIM simulation;  // uses default values
 
-	std::vector<PhysicsBody> launchedBalls;  // let's me shoot multiple balls without losing the previous ones
+    std::vector<PhysicsBody> launchedBalls;  // let's me shoot multiple balls without losing the previous ones
 
     while (!WindowShouldClose())
     {
@@ -104,19 +126,17 @@ int main(void)
 
         float frameTime = GetFrameTime();
 
-        for (const auto& ball : launchedBalls)
+        for (auto& ball : launchedBalls)
         {
-            // Draw each launched ball
-            DrawCircleV(ball.position, ball.radius, GREEN);
-		}
+            simulation.Update(ball, frameTime);
+        }
 
         if (IsKeyPressed(KEY_SPACE)) //shoots ball with space bar
         {
-			// Create a new PhysicsBody for the launched ball
-			PhysicsBody newBall(launchPos, velocity, 1.0f, 0.1f, 8.0f);
-
-			launchedBalls.push_back(newBall); // add the new ball to the vector
+            PhysicsBody newBall(launchPos, velocity, 1.0f, 0.1f, 8.0f);
+            launchedBalls.push_back(newBall); // add the new ball to the vector
         }
+
         BeginDrawing();
         ClearBackground(BLACK);
 
@@ -132,11 +152,25 @@ int main(void)
         DrawText(TextFormat("Angle: %.1f deg", launchAngleDeg), 280, 80, 20, WHITE);
         DrawText(TextFormat("Speed: %.1f", launchSpeed), 280, 110, 20, WHITE);
 
+        for (size_t i = 0; i < launchedBalls.size(); ++i) {
+            bool isColliding = false;
 
-        // This code makes the ball that is launched
-        for (auto& ball : launchedBalls)
-        {
-			simulation.Update(ball, frameTime);
+            for (size_t j = 0; j < launchedBalls.size(); ++j) {
+                if (i != j) {
+                    if (simulation.CheckSphereCollision(launchedBalls[i], launchedBalls[j]) ||
+                        simulation.CheckLineCollision(launchedBalls[i], launchedBalls[j])) {
+                        isColliding = true;
+                        break;
+                    }
+                }
+            }
+
+            Vector2 lineStart = { launchedBalls[i].position.x + launchedBalls[i].radius, launchedBalls[i].position.y };
+            Vector2 lineEnd = { launchedBalls[i].position.x + launchedBalls[i].radius * 8, launchedBalls[i].position.y };
+            DrawLineV(lineStart, lineEnd, PURPLE);
+
+            Color ballColor = isColliding ? RED : GREEN;
+            DrawCircleV(launchedBalls[i].position, launchedBalls[i].radius, ballColor);
         }
 
         EndDrawing();
