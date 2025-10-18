@@ -23,6 +23,14 @@ public:
 
 };
 
+class HalfSpace {
+public:
+    Vector2 point;   // A point on the line
+    Vector2 normal;  // Direction perpendiculer to the line (pointing "out")
+
+    HalfSpace(Vector2 p, Vector2 n) : point(p), normal(n) {}
+};
+
 class PhysicsSIM {
 public: float deltaTime; // ---------
       float time;        //         | -------- applies to all physics bodies
@@ -80,6 +88,18 @@ public: float deltaTime; // ---------
 
           return distance <= targetBody.radius;
       }
+
+      bool CheckSphereHalfSpaceCollision(const PhysicsBody& sphere, const HalfSpace& halfSpace) {
+          // Calculate the vector from the half-space point to the sphere center
+          float dx = sphere.position.x - halfSpace.point.x;
+          float dy = sphere.position.y - halfSpace.point.y;
+
+          // Dot product to find the distance from the sphere center to the half-space
+          float distance = dx * halfSpace.normal.x + dy * halfSpace.normal.y;
+
+          // If distance is less than radius, sphere is colliding with half-space
+          return distance <= sphere.radius;
+      }
 };
 
 int main(void)
@@ -98,6 +118,11 @@ int main(void)
     PhysicsSIM simulation;  // uses default values
 
     std::vector<PhysicsBody> launchedBalls;  // let's me shoot multiple balls without losing the previous ones
+
+    std::vector<HalfSpace> boundaries;
+    boundaries.push_back(HalfSpace({ 0, screenHeight }, { 0, -1 }));
+    boundaries.push_back(HalfSpace({ 0, 0 }, { 1, 0 }));
+    boundaries.push_back(HalfSpace({ screenWidth, 0 }, { -1, 0 }));
 
     while (!WindowShouldClose())
     {
@@ -152,6 +177,10 @@ int main(void)
         DrawText(TextFormat("Angle: %.1f deg", launchAngleDeg), 280, 80, 20, WHITE);
         DrawText(TextFormat("Speed: %.1f", launchSpeed), 280, 110, 20, WHITE);
 
+        DrawLine(0, screenHeight, screenWidth, screenHeight, WHITE);
+        DrawLine(0, 0, 0, screenHeight, WHITE);
+        DrawLine(screenWidth, 0, screenWidth, screenHeight, WHITE);
+
         for (size_t i = 0; i < launchedBalls.size(); ++i) {
             bool isColliding = false;
 
@@ -159,6 +188,15 @@ int main(void)
                 if (i != j) {
                     if (simulation.CheckSphereCollision(launchedBalls[i], launchedBalls[j]) ||
                         simulation.CheckLineCollision(launchedBalls[i], launchedBalls[j])) {
+                        isColliding = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!isColliding) {
+                for (const auto& boundary : boundaries) {
+                    if (simulation.CheckSphereHalfSpaceCollision(launchedBalls[i], boundary)) {
                         isColliding = true;
                         break;
                     }
@@ -174,7 +212,6 @@ int main(void)
         }
 
         EndDrawing();
-
     }
 
     CloseWindow();
