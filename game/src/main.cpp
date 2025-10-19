@@ -119,10 +119,9 @@ int main(void)
 
     std::vector<PhysicsBody> launchedBalls;  // let's me shoot multiple balls without losing the previous ones
 
-    std::vector<HalfSpace> boundaries;
-    boundaries.push_back(HalfSpace({ 0, screenHeight }, { 0, -1 }));
-    boundaries.push_back(HalfSpace({ 0, 0 }, { 1, 0 }));
-    boundaries.push_back(HalfSpace({ screenWidth, 0 }, { -1, 0 }));
+    float planeX = screenWidth / 2;
+    float planeY = screenHeight / 2;
+    float planeAngleDeg = 0.0f;
 
     while (!WindowShouldClose())
     {
@@ -135,6 +134,10 @@ int main(void)
         // GUI sliders for gravity and magnitude
         GuiSliderBar(Rectangle{ 520, 20, 200, 20 }, "Gravity X", NULL, &simulation.gravity.x, -200, 200);
         GuiSliderBar(Rectangle{ 520, 50, 200, 20 }, "Gravity Y", NULL, &simulation.gravity.y, -200, 200);
+		// GUI sliders for adjustable plane
+        GuiSliderBar(Rectangle{ 60, 140, 200, 20 }, "Plane X", NULL, &planeX, 0, screenWidth);
+        GuiSliderBar(Rectangle{ 60, 170, 200, 20 }, "Plane Y", NULL, &planeY, 0, screenHeight);
+        GuiSliderBar(Rectangle{ 60, 200, 200, 20 }, "Plane Angle", NULL, &planeAngleDeg, 0, 360);
 
         // Computes the velocity vector
         float angleRad = launchAngleDeg * (PI / 180.0f);
@@ -148,6 +151,13 @@ int main(void)
             launchPos.x + velocity.x * 0.3f,
             launchPos.y + velocity.y * 0.3f
         };
+
+        float planeAngleRad = planeAngleDeg * (PI / 180.0f);
+        Vector2 planeNormal = {
+            cosf(planeAngleRad),
+            sinf(planeAngleRad)
+        };
+        HalfSpace adjustablePlane({ planeX, planeY }, planeNormal);
 
         float frameTime = GetFrameTime();
 
@@ -177,9 +187,15 @@ int main(void)
         DrawText(TextFormat("Angle: %.1f deg", launchAngleDeg), 280, 80, 20, WHITE);
         DrawText(TextFormat("Speed: %.1f", launchSpeed), 280, 110, 20, WHITE);
 
-        DrawLine(0, screenHeight, screenWidth, screenHeight, WHITE);
-        DrawLine(0, 0, 0, screenHeight, WHITE);
-        DrawLine(screenWidth, 0, screenWidth, screenHeight, WHITE);
+        float lineLength = 400;
+        Vector2 perpendicular = { -planeNormal.y, planeNormal.x };
+        Vector2 lineStart = { planeX - perpendicular.x * lineLength, planeY - perpendicular.y * lineLength };
+        Vector2 lineEnd = { planeX + perpendicular.x * lineLength, planeY + perpendicular.y * lineLength };
+        DrawLineV(lineStart, lineEnd, WHITE);
+
+        Vector2 normalEnd = { planeX + planeNormal.x * 50, planeY + planeNormal.y * 50 };
+        DrawLineV({ planeX, planeY }, normalEnd, ORANGE);
+        DrawCircleV({ planeX, planeY }, 5, ORANGE);
 
         for (size_t i = 0; i < launchedBalls.size(); ++i) {
             bool isColliding = false;
@@ -195,11 +211,8 @@ int main(void)
             }
 
             if (!isColliding) {
-                for (const auto& boundary : boundaries) {
-                    if (simulation.CheckSphereHalfSpaceCollision(launchedBalls[i], boundary)) {
-                        isColliding = true;
-                        break;
-                    }
+                if (simulation.CheckSphereHalfSpaceCollision(launchedBalls[i], adjustablePlane)) {
+                    isColliding = true;
                 }
             }
 
