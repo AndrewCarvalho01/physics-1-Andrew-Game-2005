@@ -65,6 +65,7 @@ public: float deltaTime; // ---------
 
           float combinedRad = bodyA.radius + bodyB.radius;
           return distance <= combinedRad;
+         
       }
 
       bool CheckLineCollision(const PhysicsBody& bodyWithLine, const PhysicsBody& targetBody) {
@@ -202,8 +203,23 @@ int main(void)
 
             for (size_t j = 0; j < launchedBalls.size(); ++j) {
                 if (i != j) {
-                    if (simulation.CheckSphereCollision(launchedBalls[i], launchedBalls[j]) ||
-                        simulation.CheckLineCollision(launchedBalls[i], launchedBalls[j])) {
+                    if (simulation.CheckSphereCollision(launchedBalls[i], launchedBalls[j])) {
+                        float dx = launchedBalls[i].position.x - launchedBalls[j].position.x;
+                        float dy = launchedBalls[i].position.y - launchedBalls[j].position.y;
+                        float distance = sqrtf(dx * dx + dy * dy);
+                        float overlap = (launchedBalls[i].radius + launchedBalls[j].radius) - distance;
+
+                        float nx = dx / distance;
+                        float ny = dy / distance;
+                        launchedBalls[i].position.x += nx * overlap * 0.5f;
+                        launchedBalls[i].position.y += ny * overlap * 0.5f;
+                        launchedBalls[j].position.x -= nx * overlap * 0.5f;
+                        launchedBalls[j].position.y -= ny * overlap * 0.5f;
+
+                        isColliding = true;
+                        break;
+                    }
+                    if (simulation.CheckLineCollision(launchedBalls[i], launchedBalls[j])) {
                         isColliding = true;
                         break;
                     }
