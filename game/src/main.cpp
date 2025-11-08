@@ -65,7 +65,7 @@ public: float deltaTime; // ---------
 
           float combinedRad = bodyA.radius + bodyB.radius;
           return distance <= combinedRad;
-         
+
       }
 
       bool CheckLineCollision(const PhysicsBody& bodyWithLine, const PhysicsBody& targetBody) {
@@ -124,6 +124,10 @@ int main(void)
     float planeY = screenHeight / 2;
     float planeAngleDeg = 0.0f;
 
+    // Static ball for free Body Diagram
+    Vector2 staticBallPos = { planeX, planeY - 20 };
+	PhysicsBody staticBall(staticBallPos, { 0,0 }, 1.0f, 0.0f, 10.0f);
+
     while (!WindowShouldClose())
     {
         // GUI sliders (Had expected expression errors, until I used Rectangle{...}
@@ -135,7 +139,7 @@ int main(void)
         // GUI sliders for gravity and magnitude
         GuiSliderBar(Rectangle{ 520, 20, 200, 20 }, "Gravity X", NULL, &simulation.gravity.x, -200, 200);
         GuiSliderBar(Rectangle{ 520, 50, 200, 20 }, "Gravity Y", NULL, &simulation.gravity.y, -200, 200);
-		// GUI sliders for adjustable plane
+        // GUI sliders for adjustable plane
         GuiSliderBar(Rectangle{ 60, 140, 200, 20 }, "Plane X", NULL, &planeX, 0, screenWidth);
         GuiSliderBar(Rectangle{ 60, 170, 200, 20 }, "Plane Y", NULL, &planeY, 0, screenHeight);
         GuiSliderBar(Rectangle{ 60, 200, 200, 20 }, "Plane Angle", NULL, &planeAngleDeg, 0, 360);
@@ -159,6 +163,22 @@ int main(void)
             sinf(planeAngleRad)
         };
         HalfSpace adjustablePlane({ planeX, planeY }, planeNormal);
+
+        // Position static ball on the halfspace surface
+        staticBall.position.x = planeX - planeNormal.x * staticBall.radius;
+        staticBall.position.y = planeY - planeNormal.y * staticBall.radius;
+
+        // Calculate forces for FBD
+        Vector2 gravityForce = { simulation.gravity.x * staticBall.mass,
+                                simulation.gravity.y * staticBall.mass };
+
+        float gravityAlongNormal = gravityForce.x * planeNormal.x + gravityForce.y * planeNormal.y;
+
+        Vector2 normalForce = { -planeNormal.x * gravityAlongNormal,
+                               -planeNormal.y * gravityAlongNormal };
+
+        Vector2 frictionForce = { gravityForce.x - normalForce.x,
+                                 gravityForce.y - normalForce.y };
 
         float frameTime = GetFrameTime();
 
@@ -198,6 +218,31 @@ int main(void)
         DrawLineV({ planeX, planeY }, normalEnd, ORANGE);
         DrawCircleV({ planeX, planeY }, 5, ORANGE);
 
+        // Draw static ball for FBD
+        DrawCircleV(staticBall.position, staticBall.radius, BLUE);
+
+        float forceScale = 0.5f;
+
+        Vector2 gravityEnd = { staticBall.position.x + gravityForce.x * forceScale,
+                              staticBall.position.y + gravityForce.y * forceScale };
+        DrawLineV(staticBall.position, gravityEnd, RED);
+        DrawText("Gravity", gravityEnd.x + 5, gravityEnd.y, 10, RED);
+
+        Vector2 normalFEnd = { staticBall.position.x + normalForce.x * forceScale,
+                             staticBall.position.y + normalForce.y * forceScale };
+        DrawLineV(staticBall.position, normalFEnd, GREEN);
+        DrawText("Normal", normalFEnd.x + 5, normalFEnd.y, 10, GREEN);
+
+        Vector2 frictionEnd = { staticBall.position.x + frictionForce.x * forceScale,
+                               staticBall.position.y + frictionForce.y * forceScale };
+        DrawLineV(staticBall.position, frictionEnd, YELLOW);
+        DrawText("Friction", frictionEnd.x + 5, frictionEnd.y, 10, YELLOW);
+
+        DrawText(TextFormat("Net Force: (%.1f, %.1f)",
+            gravityForce.x + normalForce.x + frictionForce.x,
+            gravityForce.y + normalForce.y + frictionForce.y),
+            280, 200, 16, WHITE);
+
         for (size_t i = 0; i < launchedBalls.size(); ++i) {
             bool isColliding = false;
 
@@ -228,6 +273,23 @@ int main(void)
 
             if (!isColliding) {
                 if (simulation.CheckSphereHalfSpaceCollision(launchedBalls[i], adjustablePlane)) {
+                    float dx = launchedBalls[i].position.x - adjustablePlane.point.x;
+                    float dy = launchedBalls[i].position.y - adjustablePlane.point.y;
+                    float distance = dx * adjustablePlane.normal.x + dy * adjustablePlane.normal.y;
+
+                    float velocityTowardPlane = launchedBalls[i].velocity.x * adjustablePlane.normal.x +
+                        launchedBalls[i].velocity.y * adjustablePlane.normal.y;
+
+                    if (velocityTowardPlane < 0 && distance < launchedBalls[i].radius) {
+                        float penetration = launchedBalls[i].radius - distance;
+
+                        launchedBalls[i].position.x += adjustablePlane.normal.x * penetration;
+                        launchedBalls[i].position.y += adjustablePlane.normal.y * penetration;
+
+                        launchedBalls[i].velocity.x -= adjustablePlane.normal.x * velocityTowardPlane;
+                        launchedBalls[i].velocity.y -= adjustablePlane.normal.y * velocityTowardPlane;
+                    }
+
                     isColliding = true;
                 }
             }
