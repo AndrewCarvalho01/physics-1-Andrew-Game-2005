@@ -91,7 +91,7 @@ int main(void)
 {
     const int screenWidth = 800;
     const int screenHeight = 450;
-    InitWindow(screenWidth, screenHeight, "raylib - Angry Bird Launch - Friction Demo");
+    InitWindow(screenWidth, screenHeight, "raylib - Angry Bird Launch");
     SetTargetFPS(60);
 
     Vector2 launchPos = { 100, screenHeight - 100 };
@@ -228,6 +228,8 @@ int main(void)
 
         for (size_t i = 0; i < launchedBalls.size(); ++i) {
             bool isColliding = false;
+            float slopeSpeed = 0.0f;      
+            bool onSlope = false;         
 
             for (size_t j = 0; j < launchedBalls.size(); ++j) {
                 if (i != j) {
@@ -276,6 +278,8 @@ int main(void)
 
                     Vector2 tangent = { -adjustablePlane.normal.y, adjustablePlane.normal.x };
                     float v_tan = launchedBalls[i].velocity.x * tangent.x + launchedBalls[i].velocity.y * tangent.y;
+                    onSlope = true;                     
+                    slopeSpeed = fabsf(v_tan);          
 
                     float frictionMax = launchedBalls[i].mu * fabsf(N_mag);
                     Vector2 frictionForce = { 0 };
@@ -313,6 +317,17 @@ int main(void)
 
             Color ballColor = isColliding ? RED : launchedBalls[i].color;
             DrawCircleV(launchedBalls[i].position, launchedBalls[i].radius, ballColor);
+
+            // friction feedback 
+            if (onSlope)
+            {
+                int textX = (int)launchedBalls[i].position.x - 40;
+                int textY = (int)launchedBalls[i].position.y + launchedBalls[i].radius + 6;
+
+                DrawText(TextFormat("mu=%.2f", launchedBalls[i].mu), textX, textY, 14, WHITE);
+                DrawText(TextFormat("v=%.1f", slopeSpeed), textX, textY + 16, 14,
+                    slopeSpeed > 30.0f ? YELLOW : LIGHTGRAY);
+            }
         }
 
        
