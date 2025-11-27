@@ -149,6 +149,20 @@ public:
 		bodyB.velocity.y += (j / bodyB.mass) * ny;
 
 	}
+	// Resolves collision between a sphere and a plane, updating the sphere's velocity
+	void ResolvePlaneCollision(PhysicsBody& body, const HalfSpace& halfSpace) { // Reflect velocity off the plane
+		float dx = body.position.x - halfSpace.point.x; // Vector from plane point to sphere center
+		float dy = body.position.y - halfSpace.point.y ;
+		float distance = dx * halfSpace.normal.x + dy * halfSpace.normal.y; // Distance from sphere center to plane
+        if (distance < body.radius) {
+            // Reflect velocity
+			float velAlongNormal = body.velocity.x * halfSpace.normal.x + body.velocity.y * halfSpace.normal.y; // Velocity component along normal
+			if (velAlongNormal < 0) { // Only reflect if moving into the plane
+                body.velocity.x -= (1 + 1.0f) * velAlongNormal * halfSpace.normal.x; // e=1 for elastic
+				body.velocity.y -= (1 + 1.0f) * velAlongNormal * halfSpace.normal.y; 
+            }
+		}
+	}
 };
 
 int main(void)
@@ -404,6 +418,9 @@ int main(void)
                         launchedBalls[i].position.y += adjustablePlane.normal.y * penetration;
                     }
 
+                    // Resolve collision velocities
+					simulation.ResolvePlaneCollision(launchedBalls[i], adjustablePlane); // Reflect velocity
+
                     // Calculate forces on the ball
                     Vector2 gForce = { simulation.gravity.x * launchedBalls[i].mass,
                                        simulation.gravity.y * launchedBalls[i].mass };
@@ -456,6 +473,11 @@ int main(void)
 
                     isColliding = true;
                 }
+
+                
+
+                
+                
             }
 
             // Draw horizontal line extending from each ball (collision visualization)
