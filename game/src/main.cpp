@@ -290,7 +290,13 @@ int main(void)
 			launchedBalls.clear(); // Remove all existing balls
 			PhysicsBody newBall({ 400, 100 }, { 0, 0 }, 2.0f, 0.1f, 8.0f, 0.0f, PURPLE);
 			launchedBalls.push_back(newBall);
-
+		}
+        if (IsKeyPressed(KEY_SIX)) {
+			launchedBalls.clear(); // Remove all existing balls
+			PhysicsBody ball1({ 400, 100 }, { 100, 0 }, 2.0f, 0.1f, 8.0f, 0.0f, ORANGE);
+			launchedBalls.push_back(ball1);
+			PhysicsBody ball2({ 450, 100 }, { 0, 0 }, 2.0f, 0.1f, 8.0f, 0.0f, SKYBLUE);
+			launchedBalls.push_back(ball2);
 		}
         if (IsKeyPressed(KEY_SPACE))
         {
