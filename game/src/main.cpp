@@ -286,6 +286,12 @@ int main(void)
             PhysicsBody newBall(launchPos, velocity, 8.0f, 0.1f, 8.0f, 0.8f, YELLOW);
             launchedBalls.push_back(newBall);
         }
+        if (IsKeyPressed(KEY_FIVE)) {
+			launchedBalls.clear(); // Remove all existing balls
+			PhysicsBody newBall({ 400, 100 }, { 0, 0 }, 2.0f, 0.1f, 8.0f, 0.0f, PURPLE);
+			launchedBalls.push_back(newBall);
+
+		}
         if (IsKeyPressed(KEY_SPACE))
         {
             // Green ball: default properties
