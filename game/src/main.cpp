@@ -120,49 +120,48 @@ public:
         return distance <= sphere.radius;
     }
 
-	// Resolves an elastic collision between two spheres, updating their velocities
+    // Resolves an elastic collision between two spheres, updating their velocities
     void ResolveElasticCollision(PhysicsBody& bodyA, PhysicsBody& bodyB) {
-		float dx = bodyB.position.x - bodyA.position.x; // Difference in positions
-		float dy = bodyB.position.y - bodyA.position.y; // Difference in positions
+        float dx = bodyB.position.x - bodyA.position.x; // Difference in positions
+        float dy = bodyB.position.y - bodyA.position.y; // Difference in positions
 
-		float distance = sqrtf(dx * dx + dy * dy);
-		if (distance == 0.0f) return; // Prevent division by zero
+        float distance = sqrtf(dx * dx + dy * dy);
+        if (distance == 0.0f) return; // Prevent division by zero
 
-		// Normal vector
-		float nx = dx / distance;
-		float ny = dy / distance;
-		// Relative velocity
-		float rvx = bodyB.velocity.x - bodyA.velocity.x;
-		float rvy = bodyB.velocity.y - bodyA.velocity.y;
-		// Velocity along normal
-		float velAlongNormal = rvx * nx + rvy * ny;
-		if (velAlongNormal > 0) return; // They are moving apart
-		// Calculate restitution (elasticity)
-		float e = 1.0f; // Perfectly elastic
-		// Calculate impulse scalar
-		float j = -(1 + e) * velAlongNormal;
-		j /= (1 / bodyA.mass) + (1 / bodyB.mass);
-		// Apply impulse to both bodies
-		bodyA.velocity.x -= (j / bodyA.mass) * nx;
-		bodyA.velocity.y -= (j / bodyA.mass) * ny;
-		bodyB.velocity.x += (j / bodyB.mass) * nx;
-		bodyB.velocity.y += (j / bodyB.mass) * ny;
+        // Normal vector
+        float nx = dx / distance;
+        float ny = dy / distance;
+        // Relative velocity
+        float rvx = bodyB.velocity.x - bodyA.velocity.x;
+        float rvy = bodyB.velocity.y - bodyA.velocity.y;
+        // Velocity along normal
+        float velAlongNormal = rvx * nx + rvy * ny;
+        if (velAlongNormal > 0) return; // They are moving apart
+        // Calculate restitution (elasticity)
+        float e = 1.0f; // Perfectly elastic
+        // Calculate impulse scalar
+        float j = -(1 + e) * velAlongNormal;
+        j /= (1 / bodyA.mass) + (1 / bodyB.mass);
+        // Apply impulse to both bodies
+        bodyA.velocity.x -= (j / bodyA.mass) * nx;
+        bodyA.velocity.y -= (j / bodyA.mass) * ny;
+        bodyB.velocity.x += (j / bodyB.mass) * nx;
+        bodyB.velocity.y += (j / bodyB.mass) * ny;
 
-	}
-	// Resolves collision between a sphere and a plane, updating the sphere's velocity
-	void ResolvePlaneCollision(PhysicsBody& body, const HalfSpace& halfSpace) { // Reflect velocity off the plane
-		float dx = body.position.x - halfSpace.point.x; // Vector from plane point to sphere center
-		float dy = body.position.y - halfSpace.point.y ;
-		float distance = dx * halfSpace.normal.x + dy * halfSpace.normal.y; // Distance from sphere center to plane
-        if (distance < body.radius) {
-            // Reflect velocity
-			float velAlongNormal = body.velocity.x * halfSpace.normal.x + body.velocity.y * halfSpace.normal.y; // Velocity component along normal
-			if (velAlongNormal < 0) { // Only reflect if moving into the plane
-                body.velocity.x -= (1 + 1.0f) * velAlongNormal * halfSpace.normal.x; // e=1 for elastic
-				body.velocity.y -= (1 + 1.0f) * velAlongNormal * halfSpace.normal.y; 
-            }
-		}
-	}
+    }
+    // Resolves collision between a sphere and a plane, updating the sphere's velocity
+    void ResolvePlaneCollision(PhysicsBody& body, const HalfSpace& halfSpace) {
+        // Calculate velocity component along normal
+        float velAlongNormal = body.velocity.x * halfSpace.normal.x + body.velocity.y * halfSpace.normal.y;
+
+        // Only reflect if moving into the plane
+        if (velAlongNormal < 0) {
+            float e = 1.0f; // Coefficient of restitution (1.0 = perfectly elastic)
+            // Reflect and scale by restitution
+            body.velocity.x -= (1 + e) * velAlongNormal * halfSpace.normal.x;
+            body.velocity.y -= (1 + e) * velAlongNormal * halfSpace.normal.y;
+        }
+    }
 };
 
 int main(void)
@@ -287,17 +286,54 @@ int main(void)
             launchedBalls.push_back(newBall);
         }
         if (IsKeyPressed(KEY_FIVE)) {
-			launchedBalls.clear(); // Remove all existing balls
-			PhysicsBody newBall({ 400, 100 }, { 0, 0 }, 2.0f, 0.1f, 8.0f, 0.0f, PURPLE);
-			launchedBalls.push_back(newBall);
-		}
+            launchedBalls.clear(); // Remove all existing balls
+
+            // Set up plane: horizontal at bottom of screen
+            planeAngleDeg = 270.0f;
+            planeY = screenHeight - 50;
+            planeX = screenWidth / 2;
+
+            // Reset gravity to normal
+            simulation.gravity = { 0, 98.0f };
+
+            // Scenario 1: Bouncy ball - single ball drops and bounces
+            PhysicsBody newBall({ 400, 100 }, { 0, 0 }, 2.0f, 0.1f, 8.0f, 0.0f, PURPLE);
+            launchedBalls.push_back(newBall);
+        }
         if (IsKeyPressed(KEY_SIX)) {
-			launchedBalls.clear(); // Remove all existing balls
-			PhysicsBody ball1({ 400, 100 }, { 100, 0 }, 2.0f, 0.1f, 8.0f, 0.0f, ORANGE);
-			launchedBalls.push_back(ball1);
-			PhysicsBody ball2({ 450, 100 }, { 0, 0 }, 2.0f, 0.1f, 8.0f, 0.0f, SKYBLUE);
-			launchedBalls.push_back(ball2);
-		}
+            launchedBalls.clear(); // Remove all existing balls
+
+            // Set up plane: horizontal in middle of screen
+            planeAngleDeg = 270.0f;
+            planeY = 250;
+            planeX = screenWidth / 2;
+
+            // Reset gravity to normal
+            simulation.gravity = { 0, 98.0f };
+            // Scenario 2: Pool table - moving ball hits stationary ball
+            PhysicsBody ball1({ 300, 100 }, { 150, 0 }, 2.0f, 0.1f, 8.0f, 0.0f, ORANGE);
+            launchedBalls.push_back(ball1);
+            PhysicsBody ball2({ 500, 100 }, { 0, 0 }, 2.0f, 0.1f, 8.0f, 0.0f, SKYBLUE);
+            launchedBalls.push_back(ball2);
+        }
+        if (IsKeyPressed(KEY_SEVEN)) {
+            launchedBalls.clear(); // Remove all existing balls
+
+            // Set up plane: horizontal at bottom of screen
+            planeAngleDeg = 270.0f;
+            planeY = screenHeight - 50;
+            planeX = screenWidth / 2;
+
+            // Reset gravity to normal
+            simulation.gravity = { 0, 98.0f };
+
+            // Scenario 3: Galilean Cannon - stacked balls fall and collide
+            PhysicsBody ball1({ 400, 300 }, { 0, 0 }, 2.0f, 0.1f, 8.0f, 0.0f, DARKGREEN);
+            PhysicsBody ball2({ 400, 284 }, { 0, 0 }, 2.0f, 0.1f, 8.0f, 0.0f, BROWN);
+            launchedBalls.push_back(ball1);
+            launchedBalls.push_back(ball2);
+        }
+
         if (IsKeyPressed(KEY_SPACE))
         {
             // Green ball: default properties
@@ -399,8 +435,8 @@ int main(void)
                         launchedBalls[j].position.x -= nx * overlap * 0.5f;
                         launchedBalls[j].position.y -= ny * overlap * 0.5f;
 
-						// Resolve collision velocities
-						simulation.ResolveElasticCollision(launchedBalls[i], launchedBalls[j]);
+                        // Apply elastic collision response to update velocities
+                        simulation.ResolveElasticCollision(launchedBalls[i], launchedBalls[j]);
 
                         isColliding = true;
                         break;
@@ -410,14 +446,12 @@ int main(void)
                         isColliding = true;
                         break;
                     }
-
-
                 }
             }
 
-            // === FRICTION ON SLOPE ===
-            if (!isColliding) {
-                if (simulation.CheckSphereHalfSpaceCollision(launchedBalls[i], adjustablePlane)) {
+            // === PLANE COLLISION AND FRICTION ===
+            
+            { if (simulation.CheckSphereHalfSpaceCollision(launchedBalls[i], adjustablePlane)) {
                     // Calculate distance from ball to plane
                     float dx = launchedBalls[i].position.x - adjustablePlane.point.x;
                     float dy = launchedBalls[i].position.y - adjustablePlane.point.y;
@@ -430,66 +464,64 @@ int main(void)
                         launchedBalls[i].position.y += adjustablePlane.normal.y * penetration;
                     }
 
-                    // Resolve collision velocities
-					simulation.ResolvePlaneCollision(launchedBalls[i], adjustablePlane); // Reflect velocity
+                    // Apply elastic bounce (works for all balls)
+                    simulation.ResolvePlaneCollision(launchedBalls[i], adjustablePlane);
 
-                    // Calculate forces on the ball
-                    Vector2 gForce = { simulation.gravity.x * launchedBalls[i].mass,
-                                       simulation.gravity.y * launchedBalls[i].mass };
+                    // Only apply friction forces if ball has friction coefficient > 0
+                    if (launchedBalls[i].mu > 0.0f) {
+                        // Calculate forces on the ball
+                        Vector2 gForce = { simulation.gravity.x * launchedBalls[i].mass,
+                                           simulation.gravity.y * launchedBalls[i].mass };
 
-                    // Normal force magnitude (projection of gravity onto normal)
-                    float N_mag = gForce.x * adjustablePlane.normal.x + gForce.y * adjustablePlane.normal.y;
-                    Vector2 normalForce = { -adjustablePlane.normal.x * N_mag,
-                                            -adjustablePlane.normal.y * N_mag };
+                        // Normal force magnitude (projection of gravity onto normal)
+                        float N_mag = gForce.x * adjustablePlane.normal.x + gForce.y * adjustablePlane.normal.y;
+                        Vector2 normalForce = { -adjustablePlane.normal.x * N_mag,
+                                                -adjustablePlane.normal.y * N_mag };
 
-                    // Tangent direction (along the slope)
-                    Vector2 tangent = { -adjustablePlane.normal.y, adjustablePlane.normal.x };
+                        // Tangent direction (along the slope)
+                        Vector2 tangent = { -adjustablePlane.normal.y, adjustablePlane.normal.x };
 
-                    // Velocity component along the slope
-                    float v_tan = launchedBalls[i].velocity.x * tangent.x + launchedBalls[i].velocity.y * tangent.y;
-                    onSlope = true;
-                    slopeSpeed = fabsf(v_tan); // Store speed for display
+                        // Velocity component along the slope
+                        float v_tan = launchedBalls[i].velocity.x * tangent.x + launchedBalls[i].velocity.y * tangent.y;
+                        onSlope = true;
+                        slopeSpeed = fabsf(v_tan); // Store speed for display
 
-                    // Calculate kinetic friction force
-                    float frictionMax = launchedBalls[i].mu * fabsf(N_mag);
-                    Vector2 frictionForce = { 0 };
+                        // Calculate kinetic friction force
+                        float frictionMax = launchedBalls[i].mu * fabsf(N_mag);
+                        Vector2 frictionForce = { 0 };
 
-                    // Apply friction opposite to motion direction
-                    if (fabsf(v_tan) > 0.01f) {
-                        // Determine friction direction (opposite to velocity)
-                        Vector2 fDir = (v_tan > 0) ? Vector2{ -tangent.x, -tangent.y } : tangent;
-                        frictionForce = Vector2{ fDir.x * frictionMax, fDir.y * frictionMax };
-                    }
+                        // Apply friction opposite to motion direction
+                        if (fabsf(v_tan) > 0.01f) {
+                            // Determine friction direction (opposite to velocity)
+                            Vector2 fDir = (v_tan > 0) ? Vector2{ -tangent.x, -tangent.y } : tangent;
+                            frictionForce = Vector2{ fDir.x * frictionMax, fDir.y * frictionMax };
+                        }
 
-                    // Calculate net force (gravity + normal + friction)
-                    Vector2 netForce = {
-                        gForce.x + normalForce.x + frictionForce.x,
-                        gForce.y + normalForce.y + frictionForce.y
-                    };
+                        // Calculate net force (gravity + normal + friction)
+                        Vector2 netForce = {
+                            gForce.x + normalForce.x + frictionForce.x,
+                            gForce.y + normalForce.y + frictionForce.y
+                        };
 
-                    // Calculate acceleration (F = ma, so a = F/m)
-                    Vector2 accel = {
-                        netForce.x / launchedBalls[i].mass,
-                        netForce.y / launchedBalls[i].mass
-                    };
+                        // Calculate acceleration (F = ma, so a = F/m)
+                        Vector2 accel = {
+                            netForce.x / launchedBalls[i].mass,
+                            netForce.y / launchedBalls[i].mass
+                        };
 
-                    // Update velocity based on acceleration
-                    launchedBalls[i].velocity.x += accel.x * frameTime;
-                    launchedBalls[i].velocity.y += accel.y * frameTime;
+                        // Update velocity based on acceleration
+                        launchedBalls[i].velocity.x += accel.x * frameTime;
+                        launchedBalls[i].velocity.y += accel.y * frameTime;
 
-                    // Apply damping when moving slowly (simulates coming to rest)
-                    if (fabsf(v_tan) < 10.0f) {
-                        launchedBalls[i].velocity.x *= 0.98f;
-                        launchedBalls[i].velocity.y *= 0.98f;
+                        // Apply damping when moving slowly (simulates coming to rest)
+                        if (fabsf(v_tan) < 10.0f) {
+                            launchedBalls[i].velocity.x *= 0.98f;
+                            launchedBalls[i].velocity.y *= 0.98f;
+                        }
                     }
 
                     isColliding = true;
                 }
-
-                
-
-                
-                
             }
 
             // Draw horizontal line extending from each ball (collision visualization)
