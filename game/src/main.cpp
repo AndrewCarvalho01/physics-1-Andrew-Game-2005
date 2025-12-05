@@ -196,25 +196,99 @@ int main(void)
     Vector2 fbdCenter = { 650, 170 };
     float fbdRadius = 30.0f;
 
+	int currentScenario = 0; // 0 = free play, 5 = bouncy ball, 6 = pool, 7 = cannon
+    float ball1Mass = 2.0f;
+    float ball2Mass = 2.0f;
+    float ball1VelX = 0.0f;
+    float ball1VelY = 0.0f;
+    float ball2VelX = 0.0f;
+    float ball2VelY = 0.0f;
+
     // Main game loop
     while (!WindowShouldClose())
     {
         // === GUI SLIDERS ===
-        // Left side: Launch controls
-        GuiSliderBar(Rectangle{ 60, 20, 200, 20 }, "Launch X", NULL, &launchPos.x, 0, screenWidth);
-        GuiSliderBar(Rectangle{ 60, 50, 200, 20 }, "Launch Y", NULL, &launchPos.y, 0, screenHeight);
-        GuiSliderBar(Rectangle{ 60, 80, 200, 20 }, "Angle", NULL, &launchAngleDeg, 0, 180);
-        GuiSliderBar(Rectangle{ 60, 110, 200, 20 }, "Speed", NULL, &launchSpeed, 0, 400);
+        if (currentScenario == 0) {
 
-        // Right side: Gravity controls
-        GuiSliderBar(Rectangle{ 520, 20, 200, 20 }, "Gravity X", NULL, &simulation.gravity.x, -200, 200);
-        GuiSliderBar(Rectangle{ 520, 50, 200, 20 }, "Gravity Y", NULL, &simulation.gravity.y, -200, 200);
+            // Left side: Launch controls
+            GuiSliderBar(Rectangle{ 60, 20, 200, 20 }, "Launch X", NULL, &launchPos.x, 0, screenWidth);
+            GuiSliderBar(Rectangle{ 60, 50, 200, 20 }, "Launch Y", NULL, &launchPos.y, 0, screenHeight);
+            GuiSliderBar(Rectangle{ 60, 80, 200, 20 }, "Angle", NULL, &launchAngleDeg, 0, 180);
+            GuiSliderBar(Rectangle{ 60, 110, 200, 20 }, "Speed", NULL, &launchSpeed, 0, 400);
 
-        // Plane controls
-        GuiSliderBar(Rectangle{ 60, 140, 200, 20 }, "Plane X", NULL, &planeX, 0, screenWidth);
-        GuiSliderBar(Rectangle{ 60, 170, 200, 20 }, "Plane Y", NULL, &planeY, 0, screenHeight);
-        GuiSliderBar(Rectangle{ 60, 200, 200, 20 }, "Plane Angle", NULL, &planeAngleDeg, 0, 360);
+            // Right side: Gravity controls
+            GuiSliderBar(Rectangle{ 520, 20, 200, 20 }, "Gravity X", NULL, &simulation.gravity.x, -200, 200);
+            GuiSliderBar(Rectangle{ 520, 50, 200, 20 }, "Gravity Y", NULL, &simulation.gravity.y, -200, 200);
 
+            // Plane controls
+            GuiSliderBar(Rectangle{ 60, 140, 200, 20 }, "Plane X", NULL, &planeX, 0, screenWidth);
+            GuiSliderBar(Rectangle{ 60, 170, 200, 20 }, "Plane Y", NULL, &planeY, 0, screenHeight);
+            GuiSliderBar(Rectangle{ 60, 200, 200, 20 }, "Plane Angle", NULL, &planeAngleDeg, 0, 360);
+        }
+        else
+        {
+            // SCENARIO MODE - Ball parameter sliders
+                DrawText("SCENARIO MODE", 60, 20, 20, YELLOW);
+
+            if (currentScenario == 5) {
+                DrawText("Scenario 5: Bouncy Ball", 60, 45, 16, WHITE);
+                GuiSliderBar(Rectangle{ 60, 70, 200, 20 }, "Ball Mass", NULL, &ball1Mass, 0.5f, 10.0f);
+            }
+            else if (currentScenario == 6) {
+                DrawText("Scenario 6: Pool Table", 60, 45, 16, WHITE);
+                GuiSliderBar(Rectangle{ 60, 70, 200, 20 }, "Ball 1 Mass", NULL, &ball1Mass, 0.5f, 10.0f);
+                GuiSliderBar(Rectangle{ 60, 95, 200, 20 }, "Ball 1 Vel X", NULL, &ball1VelX, 0, 300);
+                GuiSliderBar(Rectangle{ 60, 120, 200, 20 }, "Ball 2 Mass", NULL, &ball2Mass, 0.5f, 10.0f);
+            }
+            else if (currentScenario == 7) {
+                DrawText("Scenario 7: Galilean Cannon", 60, 45, 16, WHITE);
+                GuiSliderBar(Rectangle{ 60, 70, 200, 20 }, "Bottom Mass", NULL, &ball1Mass, 0.5f, 10.0f);
+                GuiSliderBar(Rectangle{ 60, 95, 200, 20 }, "Top Mass", NULL, &ball2Mass, 0.5f, 10.0f);
+            }
+
+            // Reset button for scenarios
+            if (GuiButton(Rectangle{ 60, 160, 200, 30 }, "Reset Scenario")) {
+                // Re-trigger the current scenario
+                if (currentScenario == 5) {
+                    launchedBalls.clear();
+                    planeAngleDeg = 270.0f;
+                    planeY = screenHeight - 50;
+                    planeX = screenWidth / 2;
+                    simulation.gravity = { 0, 98.0f };
+                    PhysicsBody newBall({ 400, 100 }, { 0, 0 }, ball1Mass, 0.1f, 8.0f, 0.0f, PURPLE);
+                    launchedBalls.push_back(newBall);
+                }
+                else if (currentScenario == 6) {
+                    launchedBalls.clear();
+                    planeAngleDeg = 270.0f;
+                    planeY = 250;
+                    planeX = screenWidth / 2;
+                    simulation.gravity = { 0, 98.0f };
+                    PhysicsBody ball1({ 200, 240 }, { ball1VelX, 0 }, ball1Mass, 0.1f, 8.0f, 0.0f, ORANGE);
+                    launchedBalls.push_back(ball1);
+                    PhysicsBody ball2({ 500, 240 }, { 0, 0 }, ball2Mass, 0.1f, 8.0f, 0.0f, SKYBLUE);
+                    launchedBalls.push_back(ball2);
+                }
+                else if (currentScenario == 7) {
+                    launchedBalls.clear();
+                    planeAngleDeg = 270.0f;
+                    planeY = screenHeight - 50;
+                    planeX = screenWidth / 2;
+                    simulation.gravity = { 0, 98.0f };
+                    PhysicsBody ball1({ 400, 200 }, { 0, 0 }, ball1Mass, 0.1f, 8.0f, 0.0f, DARKGREEN);
+                    PhysicsBody ball2({ 400, 184 }, { 0, 0 }, ball2Mass, 0.1f, 8.0f, 0.0f, BROWN);
+                    launchedBalls.push_back(ball1);
+                    launchedBalls.push_back(ball2);
+                }
+            }
+
+            // Exit scenario button
+            if (GuiButton(Rectangle{ 60, 200, 200, 30 }, "Exit to Free Play")) {
+                currentScenario = 0;
+                launchedBalls.clear();
+            }
+        
+        }
         // === LAUNCH VELOCITY CALCULATION ===
         // Convert angle to radians and calculate velocity components
         float angleRad = launchAngleDeg * (PI / 180.0f);
@@ -286,6 +360,7 @@ int main(void)
             launchedBalls.push_back(newBall);
         }
         if (IsKeyPressed(KEY_FIVE)) {
+			currentScenario = 5;
             launchedBalls.clear(); // Remove all existing balls
 
             // Set up plane: horizontal at bottom of screen
@@ -301,6 +376,7 @@ int main(void)
             launchedBalls.push_back(newBall);
         }
         if (IsKeyPressed(KEY_SIX)) {
+			currentScenario = 6;
             launchedBalls.clear(); // Remove all existing balls
 
             // Set up plane: horizontal in middle of screen
@@ -317,6 +393,7 @@ int main(void)
             launchedBalls.push_back(ball2);
         }
         if (IsKeyPressed(KEY_SEVEN)) {
+			currentScenario = 7;
             launchedBalls.clear(); // Remove all existing balls
 
             // Set up plane: horizontal at bottom of screen
