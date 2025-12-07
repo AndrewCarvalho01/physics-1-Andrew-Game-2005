@@ -8,9 +8,9 @@
 
 // Enum for bird types
 enum BirdType {
-	BIRD_CIRCLE, // Default bird type
-	BIRD_SQUARE, // For block-like birds
-	BIRD_RECTANGLE // For wide rectangle blocks (roof)
+    BIRD_CIRCLE, // Default bird type
+    BIRD_SQUARE, // For block-like birds
+    BIRD_RECTANGLE // For wide rectangle blocks (roof)
 };
 
 // PhysicsBody class represents a dynamic object in the simulation
@@ -31,8 +31,8 @@ public:
     float toughness = 0.0f;   // Threshold momentum to survive
     bool destroyed = false;   // Marks pig as dead
 
-	PhysicsBody(Vector2 pos, Vector2 vel, float m, float d, float r, float friction = 0.0f, Color c = GREEN, BirdType type = BIRD_CIRCLE) // Constructor
-		: position(pos), velocity(vel), mass(m), drag(d), radius(r), mu(friction), color(c), active(true), activePhysics(true), birdType(type) { // Initialize all properties
+    PhysicsBody(Vector2 pos, Vector2 vel, float m, float d, float r, float friction = 0.0f, Color c = GREEN, BirdType type = BIRD_CIRCLE) // Constructor
+        : position(pos), velocity(vel), mass(m), drag(d), radius(r), mu(friction), color(c), active(true), activePhysics(true), birdType(type) { // Initialize all properties
         if (type == BIRD_SQUARE || type == BIRD_RECTANGLE) activePhysics = false; // Fort blocks start inactive
     }
 };
@@ -54,114 +54,114 @@ public:
 
     PhysicsSIM(float dt = 0.0f, float t = 0.0f, Vector2 grav = { 0, 98.0f }) // Gravity pointing down
     {
-		deltaTime = dt; // Initialize time step
-		time = t; // Initialize total time 
-		gravity = grav; // Initialize gravity
+        deltaTime = dt; // Initialize time step
+        time = t; // Initialize total time 
+        gravity = grav; // Initialize gravity
     }
 
     void Update(PhysicsBody& body, float dt)
     {
-		deltaTime = dt;  // Update time step
-		body.velocity.x += gravity.x * dt; // Apply gravity
-		body.velocity.y += gravity.y * dt; // Apply gravity
-		body.position.x += body.velocity.x * dt; // Update position
-		body.position.y += body.velocity.y * dt; // Update position
-		time += dt; // Update total time
+        deltaTime = dt;  // Update time step
+        body.velocity.x += gravity.x * dt; // Apply gravity
+        body.velocity.y += gravity.y * dt; // Apply gravity
+        body.position.x += body.velocity.x * dt; // Update position
+        body.position.y += body.velocity.y * dt; // Update position
+        time += dt; // Update total time
     }
 
     bool CheckSphereCollision(const PhysicsBody& bodyA, const PhysicsBody& bodyB) {
-		float dx = bodyA.position.x - bodyB.position.x; // Delta x
-		float dy = bodyA.position.y - bodyB.position.y; // Delta y
-		float distance = sqrtf(dx * dx + dy * dy); // Distance between centers
-		float combinedRad = bodyA.radius + bodyB.radius; // Sum of radii
-		return distance <= combinedRad; // Check collision
+        float dx = bodyA.position.x - bodyB.position.x; // Delta x
+        float dy = bodyA.position.y - bodyB.position.y; // Delta y
+        float distance = sqrtf(dx * dx + dy * dy); // Distance between centers
+        float combinedRad = bodyA.radius + bodyB.radius; // Sum of radii
+        return distance <= combinedRad; // Check collision
     }
 
     // Check AABB (square) collision
     bool CheckAABBCollision(const PhysicsBody& bodyA, const PhysicsBody& bodyB) {
-		float halfSizeA = bodyA.radius; // Half-size of body A
-		float halfSizeB = bodyB.radius; // Half-size of body B
+        float halfSizeA = bodyA.radius; // Half-size of body A
+        float halfSizeB = bodyB.radius; // Half-size of body B
 
-		bool xOverlap = fabsf(bodyA.position.x - bodyB.position.x) < (halfSizeA + halfSizeB); // Check x overlap
-		bool yOverlap = fabsf(bodyA.position.y - bodyB.position.y) < (halfSizeA + halfSizeB); // Check y overlap
+        bool xOverlap = fabsf(bodyA.position.x - bodyB.position.x) < (halfSizeA + halfSizeB); // Check x overlap
+        bool yOverlap = fabsf(bodyA.position.y - bodyB.position.y) < (halfSizeA + halfSizeB); // Check y overlap
 
-		return xOverlap && yOverlap; // Return collision result
+        return xOverlap && yOverlap; // Return collision result
     }
 
     // Check rectangle collision (wide rectangles)
     bool CheckRectangleCollision(const PhysicsBody& bodyA, const PhysicsBody& bodyB) {
-		float halfWidthA = bodyA.radius; // Half-width of body A
-		float halfHeightA = (bodyA.birdType == BIRD_RECTANGLE) ? bodyA.radius / 4.0f : bodyA.radius; // Half-height of body A
+        float halfWidthA = bodyA.radius; // Half-width of body A
+        float halfHeightA = (bodyA.birdType == BIRD_RECTANGLE) ? bodyA.radius / 4.0f : bodyA.radius; // Half-height of body A
 
-		float halfWidthB = bodyB.radius; // Half-width of body B
-		float halfHeightB = (bodyB.birdType == BIRD_RECTANGLE) ? bodyB.radius / 4.0f : bodyB.radius; // Half-height of body B
+        float halfWidthB = bodyB.radius; // Half-width of body B
+        float halfHeightB = (bodyB.birdType == BIRD_RECTANGLE) ? bodyB.radius / 4.0f : bodyB.radius; // Half-height of body B
 
-		bool xOverlap = fabsf(bodyA.position.x - bodyB.position.x) < (halfWidthA + halfWidthB); // Check x overlap
-		bool yOverlap = fabsf(bodyA.position.y - bodyB.position.y) < (halfHeightA + halfHeightB); // Check y overlap
+        bool xOverlap = fabsf(bodyA.position.x - bodyB.position.x) < (halfWidthA + halfWidthB); // Check x overlap
+        bool yOverlap = fabsf(bodyA.position.y - bodyB.position.y) < (halfHeightA + halfHeightB); // Check y overlap
 
-		return xOverlap && yOverlap; // Return collision result
+        return xOverlap && yOverlap; // Return collision result
     }
 
     // Check collision between any two bodies (handles different shapes)
     bool CheckCollision(const PhysicsBody& bodyA, const PhysicsBody& bodyB) {
         // Handle rectangle collisions
         if (bodyA.birdType == BIRD_RECTANGLE || bodyB.birdType == BIRD_RECTANGLE) {
-			return CheckRectangleCollision(bodyA, bodyB); // Use rectangle collision check
+            return CheckRectangleCollision(bodyA, bodyB); // Use rectangle collision check
         }
 
         if (bodyA.birdType == BIRD_CIRCLE && bodyB.birdType == BIRD_CIRCLE) {
-			return CheckSphereCollision(bodyA, bodyB); // Circle vs Circle
+            return CheckSphereCollision(bodyA, bodyB); // Circle vs Circle
         }
         else if (bodyA.birdType == BIRD_SQUARE && bodyB.birdType == BIRD_SQUARE) {
-			return CheckAABBCollision(bodyA, bodyB); // Square vs Square
+            return CheckAABBCollision(bodyA, bodyB); // Square vs Square
         }
         else {
             // Circle vs Square - simplified check
-			return CheckSphereCollision(bodyA, bodyB); // Use sphere collision for simplicity
+            return CheckSphereCollision(bodyA, bodyB); // Use sphere collision for simplicity
         }
     }
 
     bool CheckSphereHalfSpaceCollision(const PhysicsBody& sphere, const HalfSpace& halfSpace) {
-		float dx = sphere.position.x - halfSpace.point.x; // Delta x
-		float dy = sphere.position.y - halfSpace.point.y; // Delta y
-		float distance = dx * halfSpace.normal.x + dy * halfSpace.normal.y; // Distance from plane
+        float dx = sphere.position.x - halfSpace.point.x; // Delta x
+        float dy = sphere.position.y - halfSpace.point.y; // Delta y
+        float distance = dx * halfSpace.normal.x + dy * halfSpace.normal.y; // Distance from plane
 
         // Use smaller radius for rectangle height
-		float effectiveRadius = (sphere.birdType == BIRD_RECTANGLE) ? sphere.radius / 4.0f : sphere.radius; // Effective radius
+        float effectiveRadius = (sphere.birdType == BIRD_RECTANGLE) ? sphere.radius / 4.0f : sphere.radius; // Effective radius
 
-		return distance <= effectiveRadius; // Check collision
+        return distance <= effectiveRadius; // Check collision
     }
 
-    void ResolveElasticCollision(PhysicsBody& bodyA, PhysicsBody& bodyB) { 
-		float dx = bodyB.position.x - bodyA.position.x; // Delta x
-		float dy = bodyB.position.y - bodyA.position.y; // Delta y
-		float distance = sqrtf(dx * dx + dy * dy); // Distance between centers
-		if (distance == 0.0f) return; // Prevent division by zero
+    void ResolveElasticCollision(PhysicsBody& bodyA, PhysicsBody& bodyB) {
+        float dx = bodyB.position.x - bodyA.position.x; // Delta x
+        float dy = bodyB.position.y - bodyA.position.y; // Delta y
+        float distance = sqrtf(dx * dx + dy * dy); // Distance between centers
+        if (distance == 0.0f) return; // Prevent division by zero
 
-		float nx = dx / distance; // Normal x
-		float ny = dy / distance; // Normal y
-		float rvx = bodyB.velocity.x - bodyA.velocity.x; // Relative velocity x
-		float rvy = bodyB.velocity.y - bodyA.velocity.y; // Relative velocity y
-		float velAlongNormal = rvx * nx + rvy * ny; // Velocity along normal
-		if (velAlongNormal > 0) return; // Bodies are separating
+        float nx = dx / distance; // Normal x
+        float ny = dy / distance; // Normal y
+        float rvx = bodyB.velocity.x - bodyA.velocity.x; // Relative velocity x
+        float rvy = bodyB.velocity.y - bodyA.velocity.y; // Relative velocity y
+        float velAlongNormal = rvx * nx + rvy * ny; // Velocity along normal
+        if (velAlongNormal > 0) return; // Bodies are separating
 
-		float e = 0.8f; // Coefficient of restitution
-		float j = -(1 + e) * velAlongNormal; // Impulse scalar
-		j /= (1 / bodyA.mass) + (1 / bodyB.mass); // Divide by mass sum
+        float e = 0.8f; // Coefficient of restitution
+        float j = -(1 + e) * velAlongNormal; // Impulse scalar
+        j /= (1 / bodyA.mass) + (1 / bodyB.mass); // Divide by mass sum
 
-		bodyA.velocity.x -= (j / bodyA.mass) * nx; // Update velocity A
-		bodyA.velocity.y -= (j / bodyA.mass) * ny; // Update velocity A
-		bodyB.velocity.x += (j / bodyB.mass) * nx; // Update velocity B
-		bodyB.velocity.y += (j / bodyB.mass) * ny; // Update velocity B
+        bodyA.velocity.x -= (j / bodyA.mass) * nx; // Update velocity A
+        bodyA.velocity.y -= (j / bodyA.mass) * ny; // Update velocity A
+        bodyB.velocity.x += (j / bodyB.mass) * nx; // Update velocity B
+        bodyB.velocity.y += (j / bodyB.mass) * ny; // Update velocity B
     }
 
     void ResolvePlaneCollision(PhysicsBody& body, const HalfSpace& halfSpace) {
-		float velAlongNormal = body.velocity.x * halfSpace.normal.x + body.velocity.y * halfSpace.normal.y; // Velocity along normal
-		if (velAlongNormal < 0) // Only resolve if moving towards plane
+        float velAlongNormal = body.velocity.x * halfSpace.normal.x + body.velocity.y * halfSpace.normal.y; // Velocity along normal
+        if (velAlongNormal < 0) // Only resolve if moving towards plane
         {
             float e = 0.6f;
-			body.velocity.x -= (1 + e) * velAlongNormal * halfSpace.normal.x; // Reflect velocity 
-			body.velocity.y -= (1 + e) * velAlongNormal * halfSpace.normal.y; // Reflect velocity
+            body.velocity.x -= (1 + e) * velAlongNormal * halfSpace.normal.x; // Reflect velocity 
+            body.velocity.y -= (1 + e) * velAlongNormal * halfSpace.normal.y; // Reflect velocity
         }
     }
 };
@@ -175,15 +175,15 @@ int main(void) // Entry point
     bool fortTriggered = false;
 
     // === SLINGSHOT SETUP ===
-	Vector2 slingshotBase = { 100, screenHeight - 100 }; // Base position
-	float maxPullDistance = 100.0f; // Max pull distance
-	float launchForceMultiplier = 3.0f; // Launch force multiplier
+    Vector2 slingshotBase = { 100, screenHeight - 100 }; // Base position
+    float maxPullDistance = 100.0f; // Max pull distance
+    float launchForceMultiplier = 3.0f; // Launch force multiplier
 
-	bool isDragging = false; // Is the slingshot being dragged
-	Vector2 dragPosition = slingshotBase; // Current drag position
+    bool isDragging = false; // Is the slingshot being dragged
+    Vector2 dragPosition = slingshotBase; // Current drag position
 
     // === BIRD SELECTION ===
-	BirdType selectedBirdType = BIRD_CIRCLE; // Default bird type
+    BirdType selectedBirdType = BIRD_CIRCLE; // Default bird type
 
     // Bird properties
     float circleBirdMass = 2.0f;
@@ -198,14 +198,14 @@ int main(void) // Entry point
 
     // Physics simulation
     PhysicsSIM simulation;
-	std::vector<PhysicsBody> launchedBirds; // Launched birds
-	std::vector<PhysicsBody> fortBlocks; // Fort blocks
-	std::vector<PhysicsBody> piggies; // Piggies
+    std::vector<PhysicsBody> launchedBirds; // Launched birds
+    std::vector<PhysicsBody> fortBlocks; // Fort blocks
+    std::vector<PhysicsBody> piggies; // Piggies
 
     // === CREATE FORT STRUCTURE (PROPER SQUARE + ROOF) ===
-	float fortX = 520.0f; // Center X position of the fort
-	float fortY = screenHeight - 50; // Base Y position of the fort
-	float blockSize = 15.0f; // Size of each block
+    float fortX = 520.0f; // Center X position of the fort
+    float fortY = screenHeight - 50; // Base Y position of the fort
+    float blockSize = 15.0f; // Size of each block
 
     // --- LEFT WALL: 3 blocks ---
     fortBlocks.push_back(PhysicsBody({ fortX - 70, fortY - blockSize }, { 0,0 }, 3, 0, blockSize, 2, BROWN, BIRD_SQUARE));
@@ -230,33 +230,33 @@ int main(void) // Entry point
     fortBlocks.back().activePhysics = false;
 
     // === PIGGIES ===
-	float pigRadius = 12.0f; // Pig radius
-	float pigYInside = fortY - pigRadius; // Y position for pigs inside the fort
-	float pigXOffset = 20.0f; // X offset from center for pigs
+    float pigRadius = 12.0f; // Pig radius
+    float pigYInside = fortY - pigRadius; // Y position for pigs inside the fort
+    float pigXOffset = 20.0f; // X offset from center for pigs
 
     // --- Piggies inside the fort ---
     piggies.push_back(PhysicsBody({ fortX - pigXOffset, pigYInside }, { 0,0 }, 2.5f, 0, pigRadius, 0, GREEN, BIRD_CIRCLE));
-	piggies.back().activePhysics = false; // Disable physics initially
-	piggies.back().isPig = true; // Mark as pig
-	piggies.back().toughness = 150.0f; // Set toughness
+    piggies.back().activePhysics = false; // Disable physics initially
+    piggies.back().isPig = true; // Mark as pig
+    piggies.back().toughness = 400.0f; // Set toughness
 
-    piggies.push_back(PhysicsBody({ fortX + pigXOffset, pigYInside },{ 0,0 }, 2.5f, 0, pigRadius, 0, LIME, BIRD_CIRCLE));
+    piggies.push_back(PhysicsBody({ fortX + pigXOffset, pigYInside }, { 0,0 }, 2.5f, 0, pigRadius, 0, LIME, BIRD_CIRCLE));
     piggies.back().activePhysics = false;
     piggies.back().isPig = true;
-    piggies.back().toughness = 150.0f;
+    piggies.back().toughness = 400.0f; 
 
     // --- Piggy on top of the roof ---
     float roofTopY = fortY - 14 * blockSize - 2;
-piggies.push_back(PhysicsBody({ fortX - 10, roofTopY - pigRadius + 92.0f },{ 0,0 }, 2.5f, 0, pigRadius, 0, DARKGREEN, BIRD_CIRCLE));
-piggies.back().activePhysics = false; // Disable physics initially
-piggies.back().isPig = true; // Mark as pig
-piggies.back().toughness = 600.0f; // Higher toughness for roof pig
+    piggies.push_back(PhysicsBody({ fortX - 10, roofTopY - pigRadius + 92.0f }, { 0,0 }, 2.5f, 0, pigRadius, 0, DARKGREEN, BIRD_CIRCLE));
+    piggies.back().activePhysics = false; // Disable physics initially
+    piggies.back().isPig = true; // Mark as pig
+    piggies.back().toughness = 600.0f; // Higher toughness for roof pig
 
     // Ground plane
     float planeY = screenHeight - 50;
     float planeX = screenWidth / 2;
-	Vector2 planeNormal = { 0, -1 }; // Upward normal
-	HalfSpace ground({ planeX, planeY }, planeNormal); // Create ground plane
+    Vector2 planeNormal = { 0, -1 }; // Upward normal
+    HalfSpace ground({ planeX, planeY }, planeNormal); // Create ground plane
 
     while (!WindowShouldClose())
     {
@@ -699,41 +699,41 @@ piggies.back().toughness = 600.0f; // Higher toughness for roof pig
             else {
                 // Draw this block as a square
                 DrawRectangle(
-					block.position.x - block.radius, // Top-left X
-					block.position.y - block.radius, // Top-left Y
-					block.radius * 2, // Width
-					block.radius * 2, // Height
-					block.color //  Fill color
+                    block.position.x - block.radius, // Top-left X
+                    block.position.y - block.radius, // Top-left Y
+                    block.radius * 2, // Width
+                    block.radius * 2, // Height
+                    block.color //  Fill color
                 );
 
                 // Outline
-				DrawRectangleLines( // Draw outline
-					block.position.x - block.radius, // Top-left X
-					block.position.y - block.radius, // Top-left Y
-					block.radius * 2, // Width
-					block.radius * 2, // Height
+                DrawRectangleLines( // Draw outline
+                    block.position.x - block.radius, // Top-left X
+                    block.position.y - block.radius, // Top-left Y
+                    block.radius * 2, // Width
+                    block.radius * 2, // Height
                     BLACK
                 );
             }
         }
         // DRAW PIGGIES
 
-		for (const auto& piggy : piggies) { // Iterate through piggies
+        for (const auto& piggy : piggies) { // Iterate through piggies
 
             // Draw pig body
             DrawCircleV(piggy.position, piggy.radius, piggy.color);
             DrawCircleLines(piggy.position.x, piggy.position.y, piggy.radius, BLACK);
 
             // Draw eyes
-			DrawCircle(piggy.position.x - 4, piggy.position.y - 2, 2, WHITE); // Left eye white
-			DrawCircle(piggy.position.x + 4, piggy.position.y - 2, 2, WHITE); // Right eye white
-			DrawCircle(piggy.position.x - 3, piggy.position.y - 2, 1, BLACK); // Left eye pupil
-			DrawCircle(piggy.position.x + 5, piggy.position.y - 2, 1, BLACK); // Right eye pupil
-             
+            DrawCircle(piggy.position.x - 4, piggy.position.y - 2, 2, WHITE); // Left eye white
+            DrawCircle(piggy.position.x + 4, piggy.position.y - 2, 2, WHITE); // Right eye white
+            DrawCircle(piggy.position.x - 3, piggy.position.y - 2, 1, BLACK); // Left eye pupil
+            DrawCircle(piggy.position.x + 5, piggy.position.y - 2, 1, BLACK); // Right eye pupil
+
             // Draw snout
-			DrawCircle(piggy.position.x, piggy.position.y + 4, 4, DARKGREEN); // Snout base
-			DrawCircle(piggy.position.x - 1, piggy.position.y + 4, 1, BLACK); // Left nostril
-			DrawCircle(piggy.position.x + 1, piggy.position.y + 4, 1, BLACK); // Right nostril
+            DrawCircle(piggy.position.x, piggy.position.y + 4, 4, DARKGREEN); // Snout base
+            DrawCircle(piggy.position.x - 1, piggy.position.y + 4, 1, BLACK); // Left nostril
+            DrawCircle(piggy.position.x + 1, piggy.position.y + 4, 1, BLACK); // Right nostril
         }
         // DRAW LAUNCHED BIRDS
         for (const auto& bird : launchedBirds) {
@@ -812,5 +812,6 @@ piggies.back().toughness = 600.0f; // Higher toughness for roof pig
                 screenWidth - 210, 85, 10, LIGHTGRAY);
         }
 
-        EndDrawing();  
+        EndDrawing();
     }
+}
